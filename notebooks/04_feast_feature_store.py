@@ -185,7 +185,8 @@ else:
 import pandas as pd
 entity_df = pd.DataFrame({
     "user_id": ["u_001", "u_002", "u_003"],
-    "event_timestamp": [NOW - timedelta(hours=2), NOW - timedelta(hours=1), NOW],
+    # Query after every generated profile timestamp (u_001 is NOW-1h, etc.).
+    "event_timestamp": [NOW, NOW, NOW],
 })
 
 historical = fs.get_historical_features(
@@ -195,6 +196,7 @@ historical = fs.get_historical_features(
         "user_profile_features:topic_affinity",
     ],
 ).to_df()
+assert len(historical) == 3, f"expected 3 PIT rows, got {len(historical)}"
 print(historical)
 
 # %% [markdown]

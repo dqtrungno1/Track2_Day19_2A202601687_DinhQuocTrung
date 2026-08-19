@@ -9,9 +9,22 @@ echo "[lite] Stack: fastembed + qdrant-client[memory] + rank-bm25 + feast(sqlite
 echo
 
 # ── 1. Python ───────────────────────────────────────────────────────────
-command -v python3 >/dev/null 2>&1 || { echo "[lite] python3 not found. Install Python 3.10+."; exit 1; }
-PY_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-echo "[lite] system python3 is $PY_VER (the venv may differ — reported below)"
+# Detect correct Python executable
+PYTHON_CMD=""
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+  PYTHON_CMD="python3"
+elif command -v python >/dev/null 2>&1 && python -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+  PYTHON_CMD="python"
+fi
+
+if [ -z "$PYTHON_CMD" ]; then
+  echo "[lite] Python 3.10+ not found. Please install Python 3.10+ and make sure it is in your PATH."
+  echo "If you installed Python and still see this, check Windows 'App execution aliases' in Settings."
+  exit 1
+fi
+
+PY_VER=$($PYTHON_CMD -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+echo "[lite] system Python is $PYTHON_CMD ($PY_VER) (the venv may differ — reported below)"
 
 # ── 2. venv ─────────────────────────────────────────────────────────────
 if [ ! -d ".venv" ]; then
@@ -20,11 +33,15 @@ if [ ! -d ".venv" ]; then
     uv venv .venv
   else
     echo "[lite] Creating venv with python -m venv"
-    python3 -m venv .venv
+    $PYTHON_CMD -m venv .venv
   fi
 fi
 # shellcheck source=/dev/null
-source .venv/bin/activate
+if [ -f ".venv/Scripts/activate" ]; then
+  source .venv/Scripts/activate
+else
+  source .venv/bin/activate
+fi
 
 # ── 3. Install deps ─────────────────────────────────────────────────────
 # `uv venv` may pick a different interpreter than the system `python3`, so the
@@ -44,10 +61,10 @@ if command -v uv >/dev/null 2>&1; then
     uv pip install -r requirements.txt
   fi
 else
-  pip install -q -U pip
-  pip install -q -r requirements.txt
+  python -m pip install -U pip
+  python -m pip install -r requirements.txt
   if [ "$NEED_DILL_OVERRIDE" = "1" ]; then
-    pip install -q --upgrade 'dill>=0.4,<1.0'
+    python -m pip install --upgrade 'dill>=0.4,<1.0'
   fi
 fi
 

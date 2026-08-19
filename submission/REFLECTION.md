@@ -1,8 +1,9 @@
 # Reflection — Lab 19
 
-**Tên:** _<Họ Tên>_
-**Cohort:** _<A20-K1 / A20-K2 / ...>_
-**Path đã chạy:** _<lite | docker | both>_
+**Tên:** _Đinh Quốc Trung_
+**MSSV:** _2A202601687_
+**Cohort:** _K3_
+**Path đã chạy:** _lite_
 
 ---
 
@@ -12,13 +13,18 @@
 > `paraphrase` / `mixed`), và tại sao? Khi nào bạn **không** dùng hybrid
 > (i.e. khi nào pure BM25 hoặc pure vector là lựa chọn đúng)?
 
-_Answer here._
+- **Exact**: BM25 thắng hoặc hòa Hybrid (~96.7%) nhờ khớp chính xác từ khóa kỹ thuật.
+- **Paraphrase**: BM25 (~33.3%) tốt hơn Vector (~24%) trên model `bge-small-en` (vốn yếu tiếng Việt). `bge-m3` (full Docker) sẽ giúp Vector vượt lên.
+- **Mixed**: Hybrid thắng tuyệt đối (100.0%) do kết hợp thế mạnh tìm kiếm từ khóa và ngữ nghĩa.
+- **Không dùng Hybrid**:
+  - *Pure BM25*: Khi tìm mã SKU, mã lỗi, ID hệ thống cần khớp chính xác và tiết kiệm tài nguyên.
+  - *Pure Vector*: Khi hệ thống thuần chat ý tưởng, hỗ trợ đa ngôn ngữ, hoặc cần tối ưu hóa semantic cache nhanh gọn.
 
 ---
 
 ## Điều ngạc nhiên nhất khi làm lab này
 
-_(Optional, 1–2 câu)_
+Sự sụt giảm recall nghiêm trọng (về 0%) của post-filtering khi filter quá chặt, và cách semantic cache có thể gây rò rỉ dữ liệu chéo giữa các tenant nếu thiếu namespace.
 
 ---
 

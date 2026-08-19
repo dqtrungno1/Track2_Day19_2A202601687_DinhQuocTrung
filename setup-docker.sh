@@ -56,15 +56,33 @@ else
 fi
 
 # ── 3. Python venv (same as lite) ───────────────────────────────────────
+# Detect correct Python executable
+PYTHON_CMD=""
+if command -v python3 >/dev/null 2>&1 && python3 -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+  PYTHON_CMD="python3"
+elif command -v python >/dev/null 2>&1 && python -c 'import sys; exit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1; then
+  PYTHON_CMD="python"
+fi
+
+if [ -z "$PYTHON_CMD" ]; then
+  echo "[docker] Python 3.10+ not found. Please install Python 3.10+ and make sure it is in your PATH."
+  echo "If you installed Python and still see this, check Windows 'App execution aliases' in Settings."
+  exit 1
+fi
+
 if [ ! -d ".venv" ]; then
   if command -v uv >/dev/null 2>&1; then
     uv venv .venv
   else
-    python3 -m venv .venv
+    $PYTHON_CMD -m venv .venv
   fi
 fi
 # shellcheck source=/dev/null
-source .venv/bin/activate
+if [ -f ".venv/Scripts/activate" ]; then
+  source .venv/Scripts/activate
+else
+  source .venv/bin/activate
+fi
 
 # ── 4. Install lite + docker extras ─────────────────────────────────────
 NEED_DILL_OVERRIDE=$(python -c 'import sys; print(1 if sys.version_info >= (3,14) else 0)')
@@ -78,10 +96,10 @@ if command -v uv >/dev/null 2>&1; then
     uv pip install -r requirements.txt -r requirements-full.txt
   fi
 else
-  pip install -q -U pip
-  pip install -q -r requirements.txt -r requirements-full.txt
+  python -m pip install -U pip
+  python -m pip install -r requirements.txt -r requirements-full.txt
   if [ "$NEED_DILL_OVERRIDE" = "1" ]; then
-    pip install -q --upgrade 'dill>=0.4,<1.0'
+    python -m pip install --upgrade 'dill>=0.4,<1.0'
   fi
 fi
 
